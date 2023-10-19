@@ -1,0 +1,53 @@
+version: "3.9"
+
+# TODO add resources parameters
+services:
+  keycloak_db:
+    container_name: keycloak_db
+    image: postgres:15.2
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: pg_isready -d postgres
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      keycloak_internal:
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:22.0
+    restart: on-failure
+    command:
+      - start --auto-build --db postgres --hostname-strict-https false --hostname-strict false --proxy edge --http-enabled true
+    environment:
+      KC_DB_URL: jdbc:postgresql://keycloak_db:5432/postgres
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_DB_SCHEMA: public
+      KC_FEATURES: preview
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/realms/master" ]
+      start_period: 10s
+      interval: 30s
+      retries: 3
+      timeout: 5s
+    depends_on:
+      keycloak_db:
+        condition: service_healthy
+    ports:
+      - "8888:8080"
+    networks:
+      keycloak_internal:
+      keycloak:
+
+networks:
+  keycloak_internal:
+    driver: bridge
+  keycloak:
