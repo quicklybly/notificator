@@ -1,0 +1,3 @@
+[submodule "alert-service"]
+	path = alert-service
+	url = git@github.com:quicklybly/notificator-alert-service.git
