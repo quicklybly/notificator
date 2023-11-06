@@ -5,6 +5,13 @@ services:
     container_name: "zookeeper"
     ports:
       - "2181:2181"
+    volumes:
+      - type: volume
+        source: notificator-zookeeper-data
+        target: /var/lib/zookeeper/data
+      - type: volume
+        source: notificator-zookeeper-logs
+        target: /var/lib/zookeeper/logs
   kafka:
     image: bitnami/kafka:3.6.0
     container_name: "kafka"
@@ -20,6 +27,10 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - type: volume
+        source: notificator-kafka
+        target: /var/lib/kafka/data
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -33,3 +44,8 @@ services:
     links:
       - kafka
       - zookeeper
+
+volumes:
+  notificator-zookeeper-data:
+  notificator-zookeeper-logs:
+  notificator-kafka:
